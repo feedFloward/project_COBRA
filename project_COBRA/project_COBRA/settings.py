@@ -32,8 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     # --- custom ---
-    'ml_fiddle'
-    'crispy-forms',
+    'ml_fiddle',
 
     # --- default ---
     'django.contrib.admin',
@@ -59,7 +58,7 @@ ROOT_URLCONF = 'project_COBRA.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [''],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,4 +121,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, '_static/')  # add STATIC_ROOT to DIRS
+]
 STATIC_URL = '/static/'

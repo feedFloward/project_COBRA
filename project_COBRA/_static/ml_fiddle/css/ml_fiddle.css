@@ -1,0 +1,62 @@
+#inputspace_div {
+    margin: 0;
+    background-color: white;
+    height: 60vh;
+    position: relative;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+#inputspace_canvas {
+    margin: 0;
+}
+
+.btn-dropdown {
+    color:black;
+    background-color: none;
+    border-color: none;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    border-radius: 0;
+}
+  
+.btn-dropdown:hover,
+.btn-dropdown:active,
+.btn-dropdown:focus,
+.btn-dropdown.active {
+    /* let's darken #004E64 a bit for hover effect */
+    background: #003D4F;
+    color: #ffffff;
+    border-color: #003D4F;
+}
+
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    z-index: 99;
+    text-align: center;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+.form-control-range {
+    color: teal;
+}
+
+.class-mouseover:hover{
+    background: lightslategray;
+}
+.class-selected{
+    background: lightsteelblue;
+}

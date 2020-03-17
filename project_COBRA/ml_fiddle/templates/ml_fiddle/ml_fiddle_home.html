@@ -1,0 +1,33 @@
+{% extends "_static/base.html" %}
+
+{% load static %}
+
+{% block custom_tags %}
+    <!--  Custom CSS  -->
+    <link rel="stylesheet" type="text/css" href="{% static 'ml_fiddle/css/ml_fiddle.css' %}">
+
+{% endblock custom_tags %}
+
+
+{% block content %}
+<div id="js-vars" data-js-vars='{{json_data}}'></div>
+
+<body>
+    <div class="container-fluid h-100">
+
+        <div class="row">
+
+            <div class="col">
+                <a href="{% url 'classification_in_ml_fiddle' %}">Classification</a>
+            </div>
+
+            <div class="col">
+                <a href="{% url 'clustering_in_ml_fiddle' %}">Clustering</a>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+
+{% endblock content%}

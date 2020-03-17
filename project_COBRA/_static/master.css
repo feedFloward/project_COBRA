@@ -1,0 +1,70 @@
+/* 
+##########################################
+########## Homepage      Master ##########
+##########################################
+*/
+
+
+/* 
+--- custom fonts ---
+*/
+
+@font-face {
+    font-family: 'modern_bold';
+    src: url('/_static/fonts/custom_modern/b612-bold-webfont.woff2') format('woff2'),
+         url('/_static/fonts/custom_modern/b612-bold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'modern_bold_italic';
+    src: url('/_static/fonts/custom_modern/b612-bolditalic-webfont.woff2') format('woff2'),
+         url('/_static/fonts/custom_modern/b612-bolditalic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'modern_italic';
+    src: url('/_static/fonts/custom_modern/b612-italic-webfont.woff2') format('woff2'),
+         url('/_static/fonts/custom_modern/b612-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'modern_regular';
+    src: url('/_static/fonts/custom_modern/b612-regular-webfont.woff2') format('woff2'),
+         url('/_static/fonts/custom_modern/b612-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+
+/* 
+--- general --- 
+*/
+h1{
+    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 1%;
+    margin-bottom: 3%;
+    border-bottom: 1px solid #d4d4d4;
+}
+
+h2{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: large;
+    font-weight: bold;
+}
+
+
+/*
+--- view menu ---
+*/
+
+ 
