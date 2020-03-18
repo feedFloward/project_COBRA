@@ -57,12 +57,13 @@ $(function() {
             </div>`)
 
         //optimizer options
-        $("#classi_spec_opti").append('<div id="hyperparameter_row" class="row ml-2 mt-1 clf-related"></div>')
-        $("#hyperparameter_row").append('<input id="batch_norm" class="ml-2 mt-1 ml_param_chkbx" type="checkbox">')
-        $("#hyperparameter_row").append('<label class="form-check-label" for="batch_norm">batch norm</label>')
-        $("#hyperparameter_row").append('<span>learning rate: </span>')
-        $("#hyperparameter_row").append('<input id="lr_range" type="range" class="custom-range w-20" min="-6" max="1" step="1" value="-3" oninput="lr.value = set_exponential_value(lr_range.value)">')
-        $("#hyperparameter_row").append('<output id="lr" class="label label-default ml_param">0.001</output>')
+        $("#classi_spec_opti").append('<div id="batch_norm_row" class="row ml-2 mt-1 clf-related"></div>')
+        $("#batch_norm_row").append('<input id="batch_norm" class="ml-2 mt-1 ml_param_chkbx" type="checkbox">')
+        $("#batch_norm_row").append('<label class="form-check-label" for="batch_norm">batch norm</label>')
+        $("#classi_spec_opti").append('<div id="learning_rate_row" class="row ml-2 mt-1 clf-related"></div>')
+        $("#learning_rate_row").append('<span>learning rate: </span>')
+        $("#learning_rate_row").append('<input id="lr_range" type="range" class="custom-range w-20" min="-6" max="1" step="1" value="-3" oninput="lr.value = set_exponential_value(lr_range.value)">')
+        $("#learning_rate_row").append('<output id="lr" class="label label-default ml_param">0.001</output>')
 
 
 
@@ -74,6 +75,11 @@ $(function() {
         $("#dropout_row").append('<input id="dropout_range" type="range" class="custom-range w-20" min="0" max="0.99" step="0.01" value="0" oninput="dropout.value = dropout_range.value">')
         $("#dropout_row").append('<output id="dropout" class="label label-default ml_param">0</output>')
 
+    })
+
+    $("#choose_svm").click(function() {
+        $("#classi_spec").append('<div id="kernel_type_row" class="row ml-2 mt-1 clf-related"></div>')
+        $("#kernel_type_row").append('')
     })
 
     $("#choose_boosting").click(function() {
