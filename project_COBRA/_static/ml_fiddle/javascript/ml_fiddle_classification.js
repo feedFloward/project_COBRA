@@ -79,7 +79,19 @@ $(function() {
 
     $("#choose_svm").click(function() {
         $("#classi_spec").append('<div id="kernel_type_row" class="row ml-2 mt-1 clf-related"></div>')
-        $("#kernel_type_row").append('')
+        $("#kernel_type_row").append(`
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle clf-related ml_param" type="button" id="kernel" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="rbf">
+                    choose kernel
+                </button>
+                <div class="dropdown-menu" aria-labeledby="kernel">
+                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="rbf">rbf</button>
+                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="linear">linear</button>
+                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="poly">polynomial</button>
+                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="sigmoid">sigmoid</button>
+                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="precomputed">precomputed</button>
+                </div>
+            </div>`)
     })
 
     $("#choose_boosting").click(function() {
@@ -90,6 +102,10 @@ $(function() {
         $("#optimizer").text($(this).text())
         $("#optimizer").val($(this).val())
 
+    })
+
+    $(".container-fluid").on('mousedown', '.dropdown-item', function(e) {
+        console.log("hihihihi")
     })
 
     $("#train_btn").click(write_data)
