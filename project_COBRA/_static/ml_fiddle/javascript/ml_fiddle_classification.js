@@ -36,8 +36,6 @@ $(function() {
     $("#classi").on('mousedown', '[name="classi_option"]', function(e) {
         clear_classifier()
         $("#train_btn").removeAttr('disabled')
-        $("#model").text($(this).text())
-        $("#model").val($(this).val())
     })
 
     $("#choose_nn").click(function(e) {
@@ -89,7 +87,6 @@ $(function() {
                     <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="linear">linear</button>
                     <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="poly">polynomial</button>
                     <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="sigmoid">sigmoid</button>
-                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="precomputed">precomputed</button>
                 </div>
             </div>`)
     })
@@ -98,14 +95,9 @@ $(function() {
         add_boosting_options()
     })
 
-    $("#classi_spec_opti").on('mousedown', '[name="opti_option"]', function(e) {
-        $("#optimizer").text($(this).text())
-        $("#optimizer").val($(this).val())
-
-    })
-
     $(".container-fluid").on('mousedown', '.dropdown-item', function(e) {
-        console.log("hihihihi")
+        $(this).parent().siblings().text($(this).text())
+        $(this).parent().siblings().val($(this).val())
     })
 
     $("#train_btn").click(write_data)
@@ -135,14 +127,6 @@ $(function() {
 
         add_layer_row(num_layers)
 
-    })
-
-
-    $("#classi_spec").on('mousedown', '.choose_activation', function(e) {
-
-        var layer = $(this).parent().attr("id").slice(-1)
-        $("#layer_activation_"+layer).text($(this).text())
-        $("#layer_activation_"+layer).val($(this).text())
     })
 
     $('#classi_spec').on("mousedown",".remove_layer", function(e){

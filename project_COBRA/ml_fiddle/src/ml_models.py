@@ -55,7 +55,7 @@ class Classifier:
 
 
         elif self.model_type == 'svm':
-            self.model = SVC()
+            self.model = SVC(kernel=self.kernel)
             self.model.fit(self.X_train, self.y_train.tolist())
 
 
@@ -148,6 +148,11 @@ class Classifier:
 
         try:
             self.max_tree_depth = ml_specific['max_tree_depth']
+        except:
+            pass
+
+        try:
+            self.kernel = ml_specific['kernel']
         except:
             pass
 
