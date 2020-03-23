@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # --- apps ---
-    path('', include('ml_fiddle.urls'))
+    path('', include('ml_fiddle.urls')),
+    
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
