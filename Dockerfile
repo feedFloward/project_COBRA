@@ -11,13 +11,15 @@ RUN echo "source activate venv_cobra" > ~/.bashrc
 
 ADD . /project_COBRA
 
-WORKDIR /project_COBRA
+WORKDIR /project_COBRA/project_COBRA
+
+RUN ls -la
 
 SHELL ["conda", "run", "-n", "venv_cobra", "/bin/bash", "-c"]
 
 RUN conda config --append channels conda-forge
 
-RUN conda install --file ./requirements.txt
+RUN conda install --file ../requirements.txt
 
 RUN python ./manage.py makemigrations
 
