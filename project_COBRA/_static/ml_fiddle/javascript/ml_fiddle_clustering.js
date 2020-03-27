@@ -17,7 +17,6 @@ $(function () {
     })  
 
     $('#class_dropdown').on('mousedown', '[name="variance_option"]', function (e) {
-        console.log('hi')
         var variance_val = e.target.value
         variance_val = variance_dict[variance_val]
         classes[0].variance = variance_val

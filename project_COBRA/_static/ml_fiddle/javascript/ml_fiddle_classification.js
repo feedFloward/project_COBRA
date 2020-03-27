@@ -34,66 +34,18 @@ $(function() {
 
 
     $("#classi").on('mousedown', '[name="classi_option"]', function(e) {
+        console.log(e.target.value)
         clear_classifier()
+
+        if (e.target.value == "svm") {add_svm_options('rbf')}
+
+        else if (e.target.value == "nn") {add_nn_options('sgd', false, -3, 0)}
+
+        else if (e.target.value == "boosting") {add_boosting_options(6)}
+
         $("#train_btn").removeAttr('disabled')
     })
 
-    $("#choose_nn").click(function(e) {
-
-        $("#classi").append('<button type="button" class="btn btn-info mt-1 clf-related" id="add_layer">add layer</button>')
-        $("#classi_spec_opti").append('<div id="optimization_row" class="row ml-2"></div>')
-        $("#optimization_row").append(`
-            <div class="dropdown">
-                <button class="btn btn-primary dropdown-toggle clf-related ml_param" type="button" id="optimizer" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="sgd">
-                    choose optimizer
-                </button>
-                <div class="dropdown-menu" aria-labelledby="model">
-                    <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_sgd" value="sgd">SGD</button>
-                    <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_rmsprop" value="rmsprop">RMSprop</button>
-                    <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_adam" value="adam">Adam</button>
-                </div>
-            </div>`)
-
-        //optimizer options
-        $("#classi_spec_opti").append('<div id="batch_norm_row" class="row ml-2 mt-1 clf-related"></div>')
-        $("#batch_norm_row").append('<input id="batch_norm" class="ml-2 mt-1 ml_param_chkbx" type="checkbox">')
-        $("#batch_norm_row").append('<label class="form-check-label" for="batch_norm">batch norm</label>')
-        $("#classi_spec_opti").append('<div id="learning_rate_row" class="row ml-2 mt-1 clf-related"></div>')
-        $("#learning_rate_row").append('<span>learning rate: </span>')
-        $("#learning_rate_row").append('<input id="lr_range" type="range" class="custom-range w-20" min="-6" max="1" step="1" value="-3" oninput="lr.value = set_exponential_value(lr_range.value)">')
-        $("#learning_rate_row").append('<output id="lr" class="label label-default ml_param">0.001</output>')
-
-
-
-        // Regularization part
-        $("#classi_spec_opti").append('<div id="regularization_row" class="row ml-2 mt-1 clf-related"></div>')
-        $("#regularization_row").append('<span class="font-weight-bold">regularization</span>')
-        $("#classi_spec_opti").append('<div id="dropout_row" class="row ml-2 mt-1 clf-related"></div>')
-        $("#dropout_row").append('<span>dropout: </span>')
-        $("#dropout_row").append('<input id="dropout_range" type="range" class="custom-range w-20" min="0" max="0.99" step="0.01" value="0" oninput="dropout.value = dropout_range.value">')
-        $("#dropout_row").append('<output id="dropout" class="label label-default ml_param">0</output>')
-
-    })
-
-    $("#choose_svm").click(function() {
-        $("#classi_spec").append('<div id="kernel_type_row" class="row ml-2 mt-1 clf-related"></div>')
-        $("#kernel_type_row").append(`
-            <div class="dropdown">
-                <button class="btn btn-primary dropdown-toggle clf-related ml_param" type="button" id="kernel" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="rbf">
-                    choose kernel
-                </button>
-                <div class="dropdown-menu" aria-labeledby="kernel">
-                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="rbf">rbf</button>
-                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="linear">linear</button>
-                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="poly">polynomial</button>
-                    <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="sigmoid">sigmoid</button>
-                </div>
-            </div>`)
-    })
-
-    $("#choose_boosting").click(function() {
-        add_boosting_options()
-    })
 
     $(".container-fluid").on('mousedown', '.dropdown-item', function(e) {
         $(this).parent().siblings().text($(this).text())
@@ -125,7 +77,7 @@ $(function() {
 
         num_layers += 1
 
-        add_layer_row(num_layers)
+        add_layer_row(num_layers, 16, 'relu')
 
     })
 
@@ -140,4 +92,13 @@ $(function() {
         add_delete_button(classes.length)
         clear_prediction_plot()
     })
+
+
+    $('#clf_history_dropdown').on("mousedown", '[name="history_choice"]', function() {
+        restore_status($(this).val())
+    })
+
+
+
 })
+

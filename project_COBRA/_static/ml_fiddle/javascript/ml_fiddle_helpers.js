@@ -9,6 +9,7 @@ var precision
 var recall
 var num_layers = 0
 var ml_settings = {}
+var clf_history = []
 
 
 function add_class(class_obj) {
@@ -39,8 +40,8 @@ function do_on_class_change() {
 //variance assignment:
 const variance_dict = {
     "low" : 1,
-    "medium" : 5,
-    "high" : 10
+    "medium" : 7,
+    "high" : 14
 }
 
 const color_dict = {
@@ -115,7 +116,6 @@ function read_ml_settings() {
     $(".ml_param_chkbx").each(function() {
         ml_settings[$(this).attr('id')] = $(this).is(":checked")
     })
-    console.log(ml_settings)
 
 }
 
@@ -162,11 +162,9 @@ function write_data() {
             precision = response['precision']
             recall = response['recall']
             console.log("Trained and predicted!")
+            save_results_and_settings(classes)
             clear_prediction_plot()
-            plot_predictions()
-            console.log(accuracy)
-            console.log(precision)
-            console.log(recall)
+            plot_predictions(predictions)
         },
         
 
@@ -177,7 +175,7 @@ function write_data() {
 }
 
 
-function plot_predictions() {
+function plot_predictions(cnv_prediction) {
     $("#accuracy_label").val(accuracy.toFixed(3))
     for (var i=0; i<precision.length; i++) {
         $("#precision_label").append('<output class="label ml-3 metric-label">class '+i+': '+precision[i].toFixed(3)+'</output>')
@@ -186,14 +184,107 @@ function plot_predictions() {
         $("#recall_label").append('<output class="label ml-3 metric-label">class '+i+': '+recall[i].toFixed(3)+'</output>')
     }
 
-    for (var x= 0; x < predictions[0].length; x++) {
-        for (var y= 0; y < predictions.length; y++) {
+    for (var x= 0; x < cnv_prediction[0].length; x++) {
+        for (var y= 0; y < cnv_prediction.length; y++) {
             canv_ctx.globalAlpha = 0.4
-            canv_ctx.fillStyle = color_dict[predictions[y][x]]
+            canv_ctx.fillStyle = color_dict[cnv_prediction[y][x]]
             canv_ctx.fillRect(x,y,1,1)
         }
     }
 
+}
+
+
+//save and store results of a training run
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function save_results_and_settings(current_classes) {
+    var current_state = {}
+
+    var tmp_classes = []
+
+    Object.assign(tmp_classes, current_classes)
+
+    current_state['classes'] = tmp_classes
+
+    current_state['ml_settings'] = ml_settings
+
+    current_state['predictions'] = predictions
+
+    current_state['accuracy'] = accuracy
+
+    current_state['precision'] = precision
+
+    current_state['recall'] = recall
+
+    clf_history.push(current_state)
+
+    console.log(current_state)
+    console.log(clf_history)
+
+    var curr_state_name = current_state["ml_settings"]["model"] + ' acc: ' + current_state['accuracy'].toFixed(3)
+
+    $("#clf_history_dropdown").append('<button type="button" class="btn btn-block btn-dropdown"  value="'+(clf_history.length-1)+'" name="history_choice" id="bygone_clf_'+ clf_history.length +'">'+ curr_state_name +'</button>')
+}
+
+function restore_status(history_entry) {
+
+    classes = []
+    Object.assign(classes, clf_history[history_entry]['classes'])
+
+    accuracy = clf_history[history_entry]['accuracy']
+
+    precision = clf_history[history_entry]['precision']
+
+    recall = clf_history[history_entry]['recall']
+
+    clear_prediction_plot()
+    plot_predictions(clf_history[history_entry]['predictions'])
+
+    // reset class column
+    $('.class-row').remove()
+    for (var i=1; i<= classes.length; i++) {
+        add_class_row(i)
+    }
+
+
+    clear_classifier()
+
+    if (clf_history[history_entry]['ml_settings']['model'] == 'svm') {add_svm_options(clf_history[history_entry]['ml_settings']['kernel'])}
+
+    else if (clf_history[history_entry]['ml_settings']['model'] == 'nn') {
+        add_nn_options(clf_history[history_entry]['ml_settings']['optimizer'],
+                        clf_history[history_entry]['ml_settings']['batch_norm'],
+                        clf_history[history_entry]['ml_settings']['lr'],
+                        clf_history[history_entry]['ml_settings']['dropout'],)
+
+        let layer_units = []
+        let layer_activation = []
+        for (let [key, value] of Object.entries(clf_history[history_entry]['ml_settings'])) {
+            if (key.startsWith('layer_units')) {
+                layer_units.push(value)
+            }
+            if (key.startsWith('layer_activation')) {
+                layer_activation.push(value)
+            }
+        }
+
+        for (var layer=1; layer <= layer_units.length; layer++) {
+            add_layer_row(layer, layer_units[layer-1], layer_activation[layer-1])
+        }
+
+    }
+
+    else if (clf_history[history_entry]['ml_settings']['model'] == 'boosting') {add_boosting_options(clf_history[history_entry]['ml_settings']['max_tree_depth'])}
+
+    for (let [key, value] of Object.entries(clf_history[history_entry]['ml_settings'])) {
+        $('#'+key).val(value)
+        $('#'+key).text(value)
+
+        if ($('#'+key).hasClass('custom-range')) {
+            $('#'+key).siblings('.label').val(value)
+            $('#'+key).siblings('.label').text(value)
+        }
+    }
 }
 
 
@@ -205,7 +296,7 @@ function add_class_row(i) {
     //unselect all other class fields
     $(".class-mouseover").removeClass('class-selected')
 
-    $("#bodyAddForm").append('<div class="row class-mouseover class-selected mt-1 mb-1 border-secondary rounded-pill" id="class_form-group_'+i+'" data-id='+i+'></div>')
+    $("#bodyAddForm").append('<div class="row class-mouseover class-row class-selected mt-1 mb-1 border-secondary rounded-pill" id="class_form-group_'+i+'" data-id='+i+'></div>')
 
     $("#class_form-group_"+i).append('<div class="dropdown mt-1 mb-1 ml-5" id="class_dropdown_'+i+'"></div>')
     $("#class_dropdown_"+i).append('<button class="btn btn-secondary dropdown-toggle" type="button" id="class_dropdownMenuButton'+i+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Varianz</button>')
@@ -238,7 +329,7 @@ function add_delete_button(i) {
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function add_layer_row(i) {
+function add_layer_row(i, units, activation) {
     //add new row for each hidden layer
     $("#classi_spec").append('<div id="layer_'+i+'" class="row clf-related"></div>')
 
@@ -249,15 +340,15 @@ function add_layer_row(i) {
     $("#layer_"+i).append('<div id="layer_'+i+'_slider" class="col-7 slidecontainer ml-3 mt-3" ></div>')
 
     //add range-slider to slider-div
-    $("#layer_"+i+"_slider").append('<input id="range_'+i+'" type="range" class="custom-range w-50" min="4" max="256" value="16" oninput="layer_units_'+i+'.value = range_'+i+'.value">')
+    $("#layer_"+i+"_slider").append('<input id="layer_units_'+i+'" type="range" class="custom-range w-50 ml_param" min="4" max="256" value="'+units+'" oninput="layer_units_'+i+'_label.value = layer_units_'+i+'.value">')
     
     // add range-slider output to slider-div
-    $("#layer_"+i+"_slider").append('<output id="layer_units_'+i+'" class="label label-default ml_param">16</output>')
+    $("#layer_"+i+"_slider").append('<output id="layer_units_'+i+'_label" class="label label-default">16</output>')
     
     // add activation dropdown to hidden layer row
     $("#layer_"+i).append('<div class="dropup mt-2" ml-auto id="layer_act_dd_'+i+'"></div>')
     
-    $("#layer_act_dd_"+i).append('<button class="btn btn-sm btn-primary dropdown-toggle ml_param" type="button" id="layer_activation_'+i+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="relu">choose nonlinearity</button>')
+    $("#layer_act_dd_"+i).append('<button class="btn btn-sm btn-primary dropdown-toggle ml_param" type="button" id="layer_activation_'+i+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="'+activation+'">choose nonlinearity</button>')
 
     $("#layer_act_dd_"+i).append('<div id="layer_ddmenu_'+i+'" class="dropdown-menu" aria-labelledby="layer_activation_'+i+'"></div>')
     $("#layer_ddmenu_"+i).append('<button class="dropdown-item choose_activation" type="button" id="choose_act_relu" value="relu">relu</button>')
@@ -279,14 +370,67 @@ function add_delete_button_layer(i) {
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function add_boosting_options () {
+function add_svm_options (kernel_type) {
+    $("#classi_spec").append('<div id="kernel_type_row" class="row ml-2 mt-1 clf-related"></div>')
+    $("#kernel_type_row").append(`
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle clf-related ml_param" type="button" id="kernel" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="`+kernel_type+`">
+                choose kernel
+            </button>
+            <div class="dropdown-menu" aria-labeledby="kernel">
+                <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="rbf">rbf</button>
+                <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="linear">linear</button>
+                <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="poly">polynomial</button>
+                <button class="btn-dropdown dropdown-item" type="button" name="kernel_option" value="sigmoid">sigmoid</button>
+            </div>
+        </div>`)
+}
+
+function add_nn_options (optimizer, batch_norm, learning_rate, dropout) {
+    $("#classi").append('<button type="button" class="btn btn-info mt-1 clf-related" id="add_layer">add layer</button>')
+    $("#classi_spec_opti").append('<div id="optimization_row" class="row ml-2"></div>')
+    $("#optimization_row").append(`
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle clf-related ml_param" type="button" id="optimizer" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="`+optimizer+`">
+                choose optimizer
+            </button>
+            <div class="dropdown-menu" aria-labelledby="model">
+                <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_sgd" value="sgd">SGD</button>
+                <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_rmsprop" value="rmsprop">RMSprop</button>
+                <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_adam" value="adam">Adam</button>
+            </div>
+        </div>`)
+
+    //optimizer options
+    $("#classi_spec_opti").append('<div id="batch_norm_row" class="row ml-2 mt-1 clf-related"></div>')
+    if (batch_norm == true) {$("#batch_norm_row").append('<input id="batch_norm" class="ml-2 mt-1 ml_param_chkbx" type="checkbox" checked>')}
+    else {$("#batch_norm_row").append('<input id="batch_norm" class="ml-2 mt-1 ml_param_chkbx" type="checkbox">')}
+    $("#batch_norm_row").append('<label class="form-check-label" for="batch_norm">batch norm</label>')
+    $("#classi_spec_opti").append('<div id="learning_rate_row" class="row ml-2 mt-1 clf-related"></div>')
+    $("#learning_rate_row").append('<span>learning rate: </span>')
+    $("#learning_rate_row").append('<input id="lr" type="range" class="custom-range w-20 ml_param" min="-6" max="1" step="1" value="'+learning_rate+'" oninput="lr_label.value = set_exponential_value(lr.value)">')
+    $("#learning_rate_row").append('<output id="lr_label" class="label label-default">0.001</output>')
+
+
+
+    // Regularization part
+    $("#classi_spec_opti").append('<div id="regularization_row" class="row ml-2 mt-1 clf-related"></div>')
+    $("#regularization_row").append('<span class="font-weight-bold">regularization</span>')
+    $("#classi_spec_opti").append('<div id="dropout_row" class="row ml-2 mt-1 clf-related"></div>')
+    $("#dropout_row").append('<span>dropout: </span>')
+    $("#dropout_row").append('<input id="dropout" type="range" class="custom-range w-20 ml_param" min="0" max="0.99" step="0.01" value="'+dropout+'" oninput="dropout_label.value = dropout.value">')
+    $("#dropout_row").append('<output id="dropout_label" class="label label-default">0</output>')
+
+}
+
+function add_boosting_options (max_tree_depth) {
     $("#classi_spec").append('<div class="row clf-related" id="boosting_specs1"></div>')
 
     $("#boosting_specs1").append('<output class="label label-default ml-3 mt-2">maximum tree depth: </output>')
 
     $("#boosting_specs1").append('<div id="max_tree_depth_slider" class="col-3 slidecontainer ml-3 mt-2"></div>')
-    $("#max_tree_depth_slider").append('<input id="max_tree_depth_range" type="range" class="custom-range w-20" min="1" max="20" value="6" oninput="max_tree_depth.value = max_tree_depth_range.value">')
-    $("#boosting_specs1").append('<output id="max_tree_depth" class="label label-default mt-2 ml_param">6</output>')
+    $("#max_tree_depth_slider").append('<input id="max_tree_depth" type="range" class="custom-range w-20 ml_param" min="1" max="20" value="'+max_tree_depth+'" oninput="max_tree_depth_label.value = max_tree_depth.value">')
+    $("#max_tree_depth_slider").append('<output id="max_tree_depth_label" class="label label-default mt-2">6</output>')
 }
 
 // clear functions

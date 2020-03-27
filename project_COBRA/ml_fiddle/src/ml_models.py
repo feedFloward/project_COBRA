@@ -137,6 +137,7 @@ class Classifier:
 
             self.dropout_rate = float(ml_specific['dropout'])
             self.lr = float(ml_specific['lr'])
+            self.lr = 10 ** self.lr
 
             if ml_specific['batch_norm'] == True:
                 self.batch_norm = True
@@ -156,6 +157,8 @@ class Classifier:
         except:
             pass
 
+        self.train_test_split = float(ml_specific['train_test_split'])
+
         processed_data = []
         for key in data:
             for row in data[key]:
@@ -165,7 +168,7 @@ class Classifier:
         processed_data = np.array(processed_data)
         processed_data = np.flip(processed_data, axis=0)
 
-        X_train, X_vali, y_train, y_vali = train_test_split(processed_data[:,:2], processed_data[:,-1:], test_size=0.2)
+        X_train, X_vali, y_train, y_vali = train_test_split(processed_data[:,:2], processed_data[:,-1:], test_size=self.train_test_split)
         return X_train, X_vali, y_train, y_vali
 
     def _build_model(self):
