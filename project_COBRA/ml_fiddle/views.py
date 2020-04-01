@@ -14,6 +14,9 @@ def classification_page(request):
 def clustering_page(request):
     return render(request, 'ml_fiddle/ml_fiddle_clustering.html')
 
+def timeseries_page(request):
+    return render(request, 'ml_fiddle/ml_fiddle_timeseries.html')
+
 def make_classification(request):
     if request.method == "POST":
         get_values = request.body

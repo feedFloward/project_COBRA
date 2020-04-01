@@ -157,6 +157,7 @@ function write_data() {
         data : JSON.stringify(data_to_write),
         dataType: "json",
         success: function (response) {
+            console.log(response)
             predictions = response['Z']
             accuracy = response['overall_accuracy']
             precision = response['precision']

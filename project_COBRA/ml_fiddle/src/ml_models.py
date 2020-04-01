@@ -40,10 +40,10 @@ class Classifier:
 
             self.model = self._build_model()
 
-            self.model.fit(x= self.X_train,
-                            y= self.y_train,
-                            batch_size= self.batch_size,
-                            epochs= 200)
+            self.learning_curve =  self.model.fit(x= self.X_train,
+                                                y= self.y_train,
+                                                batch_size= self.batch_size,
+                                                epochs= 200)
 
 
 
@@ -90,7 +90,6 @@ class Classifier:
             Z = self.model.predict(np.c_[mesh_x.ravel(), mesh_y.ravel()])
             Z = Z.reshape(mesh_x.shape)
 
-
         else:
             mesh_x, mesh_y = np.meshgrid(np.linspace(0, self.canvas_size[0], num=self.canvas_size[0]),
                                         np.linspace(0, self.canvas_size[1], num=self.canvas_size[1]))
@@ -103,6 +102,11 @@ class Classifier:
         answer_dict = {'Z': Z.tolist()}
         for key, val in self.model_evaluation.items():
             answer_dict.update({key: val.tolist()})
+
+        if self.model_type == 'nn':
+            learning_curve = self.learning_curve.history['categorical_accuracy']
+            learning_curve = [str(epoch) for epoch in learning_curve]
+            answer_dict.update({'learning_curve':  learning_curve})
 
         
         return answer_dict
@@ -185,7 +189,7 @@ class Classifier:
         model.add(Dense(self.num_classes, activation='softmax'))
         model.summary()
 
-        model.compile(optimizer= self.optimizer(lr=self.lr), loss = 'categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer= self.optimizer(lr=self.lr), loss = 'categorical_crossentropy', metrics=['categorical_accuracy'])
 
         return model
 
