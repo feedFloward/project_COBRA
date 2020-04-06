@@ -6,6 +6,8 @@ var canv = document.getElementById("inputspace_canvas")
 var canv_ctx = canv.getContext("2d")
 
 var replay_data
+var metrics
+var metrics_replay
 
 canv.width = document.getElementById("inputspace_div").clientWidth
 canv.height = document.getElementById("inputspace_div").clientHeight
@@ -65,7 +67,7 @@ $(function () {
     })
 
     $("#opti").on('mousedown', '[name="opti_option"]', function(e) {
-        console.log(e.target.value)
+        $(".optimizer_specific").remove()
 
         if (e.target.value == "simulated_annealing") {add_annealing_options()}
         else if (e.target.value == "random") {add_random_search_options()}
@@ -121,19 +123,27 @@ function switch_city(i) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function add_annealing_options() {
-    $("#opti_spec").append('<div id="row_0" class="row"></div>')
+    // num_steps
+    $("#opti_spec").append('<div id="row_0" class="row optimizer_specific"></div>')
     $("#row_0").append('<div id="slider_div" class="col-7 slidecontainer ml-3 mt-3"></div>')
     $("#slider_div").append('<span>Steps: </span>')
-    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="10000" value="1000" oninput="num_steps_label.value = num_steps.value">')
+    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="50000" value="1000" oninput="num_steps_label.value = num_steps.value">')
     $("#slider_div").append('<output id="num_steps_label" class="label label-default">1000</output>')
+
+    //initial_temp
+    $("#opti_spec").append('<div id="row_1" class="row optimizer_specific"></div>')
+    $("#row_1").append('<div id="slider_div1" class="col-7 slidecontainer ml-3 mt-3"></div>')
+    $("#slider_div1").append('<span>initial temperature: </span>')
+    $("#slider_div1").append('<input id="initial_temperature" type="range" class="custom-range w-50 optimization_param" min="1" max="300" value="10" oninput="initial_temperature_label.value = initial_temperature.value">')
+    $("#slider_div1").append('<output id="initial_temperature_label" class="label label-default">10</output>')
 
 }
 
 function add_random_search_options() {
-    $("#opti_spec").append('<div id="row_0" class="row"></div>')
+    $("#opti_spec").append('<div id="row_0" class="row optimizer_specific"></div>')
     $("#row_0").append('<div id="slider_div" class="col-7 slidecontainer ml-3 mt-3"></div>')
     $("#slider_div").append('<span>Steps: </span>')
-    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="10000" value="1000" oninput="num_steps_label.value = num_steps.value">')
+    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="50000" value="1000" oninput="num_steps_label.value = num_steps.value">')
     $("#slider_div").append('<output id="num_steps_label" class="label label-default">1000</output>')
 
 }
@@ -163,6 +173,14 @@ function draw_solution(solution) {
     }
 }
 
+function set_metrics() {
+    for (let [key, value] of Object.entries(metrics)) {
+        $('#'+key).val(value)
+        $('#'+key).text(value)
+
+    }
+}
+
 function replay() {
 
     for (let i=0; i<replay_data.length; i++) {
@@ -170,6 +188,10 @@ function replay() {
         setTimeout(function() {
             redraw_canvas()
             draw_solution(replay_data[i])
+            for (let [key, value] of Object.entries(metrics_replay)) {
+                $('#'+key).val(value[i])
+                $('#'+key).text(value[i])
+            }
         }, i*20)
 
     }
@@ -229,12 +251,14 @@ function write_data() {
         success: function (response) {
             console.log(response)
             redraw_canvas()
-            draw_solution(response[0])
-            replay_data = response[2]
+            draw_solution(response['solution'])
+            replay_data = response['solution_history']
+            metrics = response['metrics']
+            metrics_replay = response['metrics_history']
+            set_metrics()
         },
         
 
-    //HIER AUFPASSEN! WAS HIER STEHT WIRD VLT SCHON AUSGEFÜHRT, BEVOR AJAX REQUEST BEENDET IST!!!!
     
     })
 

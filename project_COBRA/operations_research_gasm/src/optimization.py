@@ -8,9 +8,10 @@ class Optimization:
 
         #basics from json
         self.city_data = input_dict['city_data']
-        self.circle_mode = input_dict['optimization_settings']['circle_mode']
-        self.optimization = input_dict['optimization_settings']['optimization']
-        self.num_steps = int(input_dict['optimization_settings']['num_steps'])
+        self.optimization_settings = input_dict['optimization_settings']
+        self.circle_mode = self.optimization_settings['circle_mode']
+        self.optimization = self.optimization_settings['optimization']
+        self.num_steps = int(self.optimization_settings['num_steps'])
 
         self.num_cities = len(self.city_data)
         self.dist_matrix = self._calc_distmatrix(self.city_data)
@@ -27,7 +28,8 @@ class Optimization:
     def optimize(self):
         if self.optimization == 'simulated_annealing':
             #spezifische Parameter aus json parsen
-            s = self.simulated_annealing(self.num_steps, 100)
+            initial_temperature = int(self.optimization_settings['initial_temperature'])
+            s = self.simulated_annealing(self.num_steps, initial_temperature)
 
         elif self.optimization == 'random':
             s = self.random_search(self.num_steps)
@@ -45,12 +47,19 @@ class Optimization:
         print(solution_history)
         print(val_history)
 
-        return solution.tolist(), solution_val, solution_history.tolist(), val_history.tolist()
+        return {'solution': solution.tolist(),
+                'metrics': {'total_length': solution_val},
+                'solution_history': solution_history.tolist(),
+                'metrics_history': {'total_length': val_history.tolist()}
+                }
 
 
     def random_search(self, num_steps):
         solution = self.base
         solution_val = self._calc_objective_val(solution)
+
+        solution_history = np.asarray([solution])
+        val_history = np.asarray(solution_val)
 
         # DIESE FOR SCHLEIFE NOCH VEKTORISIEREN
         for _ in range(num_steps):
@@ -59,8 +68,11 @@ class Optimization:
             if candidate_val < solution_val:
                 solution_val = candidate_val
                 solution = candidate
+
+            solution_history = np.append(solution_history, [solution], axis=0)
+            val_history = np.append(val_history, solution_val)
         
-        return solution, solution_val
+        return solution, solution_val, solution_history, val_history
 
 
     def simulated_annealing(self, num_steps, initial_temp, debug=False):
