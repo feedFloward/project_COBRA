@@ -60,3 +60,10 @@
 .class-selected{
     background: lightsteelblue;
 }
+
+.city-mouseover:hover{
+    background: lightslategray;
+}
+.city-selected{
+    background: lightsteelblue;
+}

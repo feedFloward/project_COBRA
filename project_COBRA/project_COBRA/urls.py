@@ -17,11 +17,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from ml_fiddle import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.ml_fiddle_home, name='ml_fiddle_menu'),
 
     # --- apps ---
     path('', include('ml_fiddle.urls')),
+    path('', include('operations_research_gasm.urls'))
     
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

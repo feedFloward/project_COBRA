@@ -6,7 +6,7 @@ from ml_fiddle.src.clustering import Clustering
 import json
 
 def ml_fiddle_home(request):
-    return render(request, 'ml_fiddle/ml_fiddle_home.html')
+    return render(request, '_static/home.html')
 
 def classification_page(request):
     return render(request, 'ml_fiddle/ml_fiddle_classification.html')

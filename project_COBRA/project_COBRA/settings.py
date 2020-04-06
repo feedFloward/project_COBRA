@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ["*"] #change before production
 INSTALLED_APPS = [
     # --- custom ---
     'ml_fiddle',
+    'operations_research_gasm',
 
     # --- default ---
     'django.contrib.admin',

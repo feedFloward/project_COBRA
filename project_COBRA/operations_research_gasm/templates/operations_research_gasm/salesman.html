@@ -1,0 +1,167 @@
+{% extends "_static/base.html" %}
+
+{% load static %}
+
+{% block custom_tags %}
+    <!--  Custom CSS  -->
+    <link rel="stylesheet" type="text/css" href="{% static 'ml_fiddle/css/ml_fiddle.css' %}">
+
+    <!-- tensorflow.js import -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <!-- and tfjs-vis-->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+
+    <!-- Cookie -->
+    <script src="{% static 'jquery.cookie.js' %}"></script>
+
+{% endblock custom_tags %}
+
+
+{% block content %}
+
+<div id="js-vars" data-js-vars='{{json_data}}'></div>
+
+<div class="loader" id="loader"></div>
+
+
+
+<div class="container-fluid h-100" style="margin-top: 0%;">
+
+    <div class="row bg-light flex-fill d-flex">
+
+        <div class="col" id="city_definition">
+            
+            <div class="card">
+                <div class="card-header custom-header no-padding" id="headingTwo">
+                    <h5 class="mb-0">
+                    <button class="btn btn-subheader collapsed change-icon" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        <span>+</span> place cities
+                    </button>
+                    </h5>
+                </div>
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" >
+                    <div class="card-body card-inner-body">
+                        <!-- <button class="btn btn-outline-success" type="button" id="addBodyField">add city</button> -->
+                        <form id="bodyAddForm">
+                            <!-- added by jQuery -->
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div id="inputspace_div" class="col-6 border rounded">
+            
+            <canvas id="inputspace_canvas" class="canvas"></canvas>
+
+        </div>
+
+        <div class="col ml-1" id="commando_panel">
+
+            <div class="row">
+                <button class="btn btn-danger" id="clear_all_btn">clear canvas</button>
+
+                <div class="dropdown ml-1">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="optimizer_history" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        history
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="optimizer_history" id="optimizer_history_dropdown">
+
+                    </div>
+                </div>
+
+                <button class="btn btn-success ml-1" id="play_btn">play!</button>
+
+            </div>
+
+            <div class="row mt-5">
+                <span>some metrics here: </span>
+                <output id="balance_value_label" disabled>not defined</output>
+            </div>
+
+            </div>
+
+
+
+        </div>
+
+
+    </div>
+
+    <!-- unterer teil -->
+    <div class="row bg-light justify-content-center flex-grow-1 border-bottom" style="margin-top: 1%;">
+        
+        <div class="col-1 border-right" id="opti">
+
+            <div class="dropright">
+                <button class="btn btn-primary dropdown-toggle optimization_param" type="button" id="optimization" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="random">
+                  choose optimization
+                </button>
+                <div class="dropdown-menu" aria-labelledby="optimization">
+                    <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_random" value="random">random hill climb</button>
+                    <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_annealing" value="simulated_annealing">simulated annealing</button>
+
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="col-5 border-right" id="opti_spec"></div>
+
+        <div class="col-4" id="opti_spec_opti">
+            <input id="circle_mode" class="ml-2 mt-1 optimization_param_chkbx" type="checkbox" checked>
+            <label class="form-check-label" for="circle_mode">closed circle</label>
+        </div>
+
+        <div class="col-2">
+            
+            <div class="row">
+                <button type="button" class="btn btn-success btn-block" id="optimize_btn">optimize</button>
+            </div>
+        
+        </div>
+    </div>
+
+</div>
+
+<script src="{% static 'operations_research_gasm/javascript/operations_research_gasm.js' %}"></script>
+
+<script>
+
+    $("#loader").hide()
+
+
+    $(window).resize(function() {
+
+    })
+
+    $(document).ready(function() {
+
+    
+        $("#addBodyField").on('mousedown', '.dropdown-menu', function (e) {
+            
+            e.stopPropagation();
+        });
+
+        $(document).ajaxStart(function() {
+            $("#loader").show()
+            $(".container-fluid").append('<div id="overlay" style="background-color:grey;position:absolute;top:0;left:0;height:100%;width:100%;z-index:98;opacity:0.5"></div>')
+        })
+        $(document).ajaxComplete(function() {
+            $("#loader").hide()
+            $('.canvas').removeAttr('disabled')
+            $("#overlay").remove()
+        })
+
+    })
+
+
+
+
+</script>
+
+
+{% endblock content%}
