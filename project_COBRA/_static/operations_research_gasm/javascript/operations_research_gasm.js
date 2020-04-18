@@ -71,6 +71,7 @@ $(function () {
 
         if (e.target.value == "simulated_annealing") {add_annealing_options()}
         else if (e.target.value == "random") {add_random_search_options()}
+        else if (e.target.value == "cem") {add_cem_options()}
     })
 
     $("#play_btn").click(function() {
@@ -93,6 +94,10 @@ function add_city_row(i) {
     $("#city_form-group_"+i).append('<output class="label label-default">city '+i+'</output>')
 
     add_delete_button(i)
+
+    console.log('hi')
+    $('#num_permutations').text(calc_factorial(i))
+
 }
 
 function change_active_city(city_row) {
@@ -127,7 +132,7 @@ function add_annealing_options() {
     $("#opti_spec").append('<div id="row_0" class="row optimizer_specific"></div>')
     $("#row_0").append('<div id="slider_div" class="col-7 slidecontainer ml-3 mt-3"></div>')
     $("#slider_div").append('<span>Steps: </span>')
-    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="50000" value="1000" oninput="num_steps_label.value = num_steps.value">')
+    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="50000" step="10" value="1000" oninput="num_steps_label.value = num_steps.value">')
     $("#slider_div").append('<output id="num_steps_label" class="label label-default">1000</output>')
 
     //initial_temp
@@ -143,8 +148,24 @@ function add_random_search_options() {
     $("#opti_spec").append('<div id="row_0" class="row optimizer_specific"></div>')
     $("#row_0").append('<div id="slider_div" class="col-7 slidecontainer ml-3 mt-3"></div>')
     $("#slider_div").append('<span>Steps: </span>')
-    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="50000" value="1000" oninput="num_steps_label.value = num_steps.value">')
+    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="50000" step="10" value="1000" oninput="num_steps_label.value = num_steps.value">')
     $("#slider_div").append('<output id="num_steps_label" class="label label-default">1000</output>')
+
+}
+
+function add_cem_options() {
+    $("#opti_spec").append('<div id="row_0" class="row optimizer_specific"></div>')
+    $("#row_0").append('<div id="slider_div" class="col-7 slidecontainer ml-3 mt-3"></div>')
+    $("#slider_div").append('<span>Steps: </span>')
+    $("#slider_div").append('<input id="num_steps" type="range" class="custom-range w-50 optimization_param" min="10" max="1000" value="100" step="10" oninput="num_steps_label.value = num_steps.value">')
+    $("#slider_div").append('<output id="num_steps_label" class="label label-default">100</output>')
+
+    //N
+    $("#opti_spec").append('<div id="row_1" class="row optimizer_specific"></div>')
+    $("#row_1").append('<div id="slider_div1" class="col-7 slidecontainer ml-3 mt-3"></div>')
+    $("#slider_div1").append('<span>N: </span>')
+    $("#slider_div1").append('<input id="N" type="range" class="custom-range w-50 optimization_param" min="10" max="100" value="10" step="2" oninput="N_label.value = N.value">')
+    $("#slider_div1").append('<output id="N_label" class="label label-default">10</output>')
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -176,7 +197,7 @@ function draw_solution(solution) {
 function set_metrics() {
     for (let [key, value] of Object.entries(metrics)) {
         $('#'+key).val(value)
-        $('#'+key).text(value)
+        $('#'+key).text(value.toFixed(1))
 
     }
 }
@@ -190,7 +211,7 @@ function replay() {
             draw_solution(replay_data[i])
             for (let [key, value] of Object.entries(metrics_replay)) {
                 $('#'+key).val(value[i])
-                $('#'+key).text(value[i])
+                $('#'+key).text(value[i].toFixed(1))
             }
         }, i*20)
 
@@ -262,4 +283,13 @@ function write_data() {
     
     })
 
+}
+
+
+function calc_factorial(num)
+{
+    if (num === 0)
+      { return 1; }
+    else
+      { return num * calc_factorial( num - 1 ); }
 }

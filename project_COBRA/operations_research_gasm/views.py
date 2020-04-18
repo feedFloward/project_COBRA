@@ -16,5 +16,4 @@ def salesman_optimization(request):
         values_dict = json.loads(get_values)
         opt = Optimization(values_dict)
         solution = opt.optimize()
-        
         return HttpResponse(json.dumps(solution), content_type="application/json")

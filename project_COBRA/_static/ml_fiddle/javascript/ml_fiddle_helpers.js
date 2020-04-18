@@ -404,9 +404,19 @@ function add_nn_options (optimizer, batch_norm, learning_rate, dropout) {
 
     //optimizer options
     $("#classi_spec_opti").append('<div id="batch_norm_row" class="row ml-2 mt-1 clf-related"></div>')
-    if (batch_norm == true) {$("#batch_norm_row").append('<input id="batch_norm" class="ml-2 mt-1 ml_param_chkbx" type="checkbox" checked>')}
-    else {$("#batch_norm_row").append('<input id="batch_norm" class="ml-2 mt-1 ml_param_chkbx" type="checkbox">')}
-    $("#batch_norm_row").append('<label class="form-check-label" for="batch_norm">batch norm</label>')
+    if (batch_norm == true) {
+        $("#batch_norm_row").append(`<div class="custom-control custom-switch">
+        <input id="batch_norm" type="checkbox" class="custom-control-input ml_param_chkbx" checked>
+        <label class="custom-control-label" for="batch_norm">batch norm</label>
+        </div>`)
+    }
+    else {
+        $("#batch_norm_row").append(`<div class="custom-control custom-switch">
+        <input id="batch_norm" type="checkbox" class="custom-control-input ml_param_chkbx">
+        <label class="custom-control-label" for="batch_norm">batch norm</label>
+        </div>`)
+    }
+
     $("#classi_spec_opti").append('<div id="learning_rate_row" class="row ml-2 mt-1 clf-related"></div>')
     $("#learning_rate_row").append('<span>learning rate: </span>')
     $("#learning_rate_row").append('<input id="lr" type="range" class="custom-range w-20 ml_param" min="-6" max="1" step="1" value="'+learning_rate+'" oninput="lr_label.value = set_exponential_value(lr.value)">')

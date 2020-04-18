@@ -33,19 +33,23 @@ class Optimization:
 
         elif self.optimization == 'random':
             s = self.random_search(self.num_steps)
+
+        elif self.optimization == 'cem':
+            N = int(self.optimization_settings['N'])
+            s = self.cross_entropy_method(num_steps=self.num_steps, N=N, gamma=0.2)
         
         solution = s[0]
         solution_val = s[1]
         solution_history = s[2]
         val_history = s[3]
 
+
         if self.circle_mode:
             solution = np.insert(solution, 0, 0)
             solution = np.append(solution, 0)
             solution_history = np.insert(solution_history, 0, 0, axis=1)
             solution_history = np.apply_along_axis(lambda row: np.append(row, 0), axis=1, arr=solution_history)
-        print(solution_history)
-        print(val_history)
+
 
         return {'solution': solution.tolist(),
                 'metrics': {'total_length': solution_val},
@@ -109,7 +113,69 @@ class Optimization:
             val_history = np.append(val_history, solution_val)
 
         return solution, solution_val, solution_history, val_history
+    
 
+    def cross_entropy_method(self, num_steps, N, gamma):
+        def get_initial_transition_matrix():
+            transition_matrix = np.full((self.num_cities, self.num_cities), 1/self.num_permutable_cities)
+            np.fill_diagonal(transition_matrix, 0)
+            transition_matrix[:,0] = 0
+            return transition_matrix
+
+        def draw_next_city(predecessor, transition_matrix):
+            return np.random.choice(a=np.arange(1, self.num_cities, 1).astype('int'), p=transition_matrix[predecessor,1:] / sum(transition_matrix[predecessor,1:]))
+
+        def generate_solution(transition_matrix):
+            transition_matrix = np.copy(transition_matrix)
+            solution_path = [0]
+            city = draw_next_city(0, transition_matrix)
+            solution_path.append(city)
+            transition_matrix[:,city] = 0
+            row_sums = transition_matrix.sum(axis=1, keepdims=True)
+            transition_matrix = np.divide(transition_matrix, row_sums, out=np.zeros_like(transition_matrix), where=row_sums!=0)
+            for _ in range(self.num_permutable_cities - 1):
+                city = draw_next_city(solution_path[-1], transition_matrix)
+                solution_path.append(city)
+                transition_matrix[:,city] = 0
+                row_sums = transition_matrix.sum(axis=1, keepdims=True)
+                transition_matrix = np.divide(transition_matrix, row_sums, out=np.zeros_like(transition_matrix), where=row_sums!=0)
+            return solution_path[1:]
+
+        def check_if_path_exists(city_1, city_2, solution):
+            for i in range(len(solution)-1):
+                if solution[i]==city_1 and solution[i+1]==city_2:
+                    return 1
+            return 0
+
+        def update_transition_matrix(best_solutions):
+            transition_matrix = np.zeros(shape=(self.num_cities, self.num_cities))
+            for i in range(self.num_cities):
+                for j in range(1, self.num_cities):
+                    if i==j: continue
+                    transition_matrix[i,j] = len(best_solutions) * sum([check_if_path_exists(i,j,solution) for solution in best_solutions]) / len(best_solutions)
+            transition_matrix = transition_matrix + 0.1
+            row_sums = transition_matrix.sum(axis=1, keepdims=True)
+            transition_matrix = np.divide(transition_matrix, row_sums, out=np.zeros_like(transition_matrix), where=row_sums!=0)
+            return transition_matrix
+
+        transition_matrix = get_initial_transition_matrix()
+        initial_solutions = [generate_solution(transition_matrix) for _ in range(N)]
+        initial_solutions = np.array([[solution, self._calc_objective_val(solution)] for solution in initial_solutions])
+        winners = initial_solutions[initial_solutions[:,1].argsort()][:round(N*gamma)]
+
+        solution_history = np.asarray(winners[:1][:,0].tolist())
+        val_history = np.asarray(winners[:1][:,1])
+
+        
+        for _ in range(num_steps):
+            transition_matrix= update_transition_matrix(winners[:,0])
+            solutions = [generate_solution(transition_matrix) for _ in range(N)]
+            solutions = np.array([[solution, self._calc_objective_val(solution)] for solution in solutions])
+            winners = solutions[solutions[:,1].argsort()][:round(N*gamma)]
+            solution_history = np.append(solution_history, winners[:1][:,0].tolist(), axis=0)
+            val_history = np.append(val_history, winners[:1][:,1])
+
+        return winners[:1][:,0].tolist(), winners[:1][:,1].item(), solution_history, val_history
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def _calc_distmatrix(self, input_dicts):

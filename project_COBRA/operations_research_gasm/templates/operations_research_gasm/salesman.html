@@ -77,11 +77,16 @@
             </div>
 
             <div class="row mt-5">
+                <span># possible solutions: </span>
+                <output id="num_permutations">not defined</output>
+            </div>
+
+            <div class="row mt-5">
                 <span>solution's total lenght: </span>
                 <output id="total_length" class="metric">not defined</output>
             </div>
 
-            </div>
+        </div>
 
 
 
@@ -102,6 +107,7 @@
                 <div class="dropdown-menu" aria-labelledby="optimization">
                     <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_random" value="random">random hill climb</button>
                     <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_annealing" value="simulated_annealing">simulated annealing</button>
+                    <button class="btn-dropdown dropdown-item" type="button" name="opti_option" id="choose_cem" value="cem">cross entropy method</button>
 
                 </div>
             </div>
@@ -112,8 +118,12 @@
         <div class="col-5 border-right" id="opti_spec"></div>
 
         <div class="col-4" id="opti_spec_opti">
-            <input id="circle_mode" class="ml-2 mt-1 optimization_param_chkbx" type="checkbox" checked>
-            <label class="form-check-label" for="circle_mode">closed circle</label>
+
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input optimization_param_chkbx" checked id="circle_mode">
+                <label class="custom-control-label" for="circle_mode">circle mode</label>
+            </div>
+
         </div>
 
         <div class="col-2">
