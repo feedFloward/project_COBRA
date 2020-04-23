@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+{% extends "_static/base.html" %}
+
+{% load static %}
+
+{% block custom_tags %}
+    <!--  Custom CSS  -->
+    <link rel="stylesheet" type="text/css" href="{% static 'ml_fiddle/css/ml_fiddle.css' %}">
+
+    <!-- tensorflow.js import -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <!-- and tfjs-vis-->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+
+    <!-- Axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+
+    <!-- Cookie -->
+    <script src="{% static 'jquery.cookie.js' %}"></script>
+{% endblock custom_tags %}
+
+
+{% block content %}
+
+<head></head>
+
+<body>
+
+<div id="regression-app" class="container-fluid h-100" style="margin-top: 0%;">
+    <div class="row flex-fill">
+        <div class="col" id="dataset-definition">
+
+            <h5>your dataset</h5>
+            <div class="row">
+    
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="variance-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      brush size
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <button v-for="variance in variances" v-bind:value="variance.val" class="btn-dropdown dropdown-item" @click="currVariance = variance.val">[[ variance.name ]]</button>
+                    </div>
+    
+                  </div>
+    
+                <button type="button" class="btn btn-danger" @click="clear_data">clear dataset</button>
+    
+            </div>
+            
+            <p>total sample size: [[ points.length ]]</p>
+
+        </div>
+
+        <div class="col-6 border rounded" id="inputspace_div">
+            <canvas ref="inputspace_canvas" class="canvas" id="inputspace_canvas"></canvas>
+        </div>
+
+        <div class="col" id="analysis">
+            <h5>analysis</h5>
+        </div>
+    </div>
+
+    <div class="row flex-fill">
+        <div class="col">
+            <div class="dropdown">
+                <button v-if="Object.keys(currModel).length > 0" class="btn btn-primary dropdown-toggle" type="button" id="model-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    [[currModel.name]]
+                </button>
+                <button v-else class="btn btn-primary dropdown-toggle" type="button" id="model-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    choose model
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <button v-for="model in models" v-bind:value="model.val" class="btn-dropdown dropdown-item" @click="currModel= model">[[ model.name ]]</button>
+                </div>
+
+              </div>
+        </div>
+
+        <div class="col-6">
+            <linear-regression-options v-if="currModel.val === 'linear_regression'" @set-ml-options="get_ml_specs($event)"></linear-regression-options>
+        </div>
+
+        <div class="col">
+            <button class="btn btn-success" @click="write_data">train</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+    <!-- Templates -->
+    <script type="text/x-template" id="linear-regression-template">
+        <div class="row">
+            <form class="range-field my-4 w-25">
+                <label for="polynomial-order-slider">polynomial order [[ polynomial_order ]]</label>
+                <input :value="polynomial_order" type="range" class="custom-range" min="0" max="14" id="polynomial-order-slider" @input="polynomial_order= $event.target.value">
+            </form>
+        </div>
+    </script>
+
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue"></script>
+    <script src="{% static 'ml_fiddle/javascript/regression.js' %}"></script>
+</body>
+
+
+
+{% endblock content%}

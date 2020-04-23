@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Dense, Input, Dropout, BatchNormalization
 from tensorflow.keras.optimizers import SGD, Adam, RMSprop
 from tensorflow.keras.utils import to_categorical
 
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -13,6 +13,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import PolynomialFeatures
 
 from xgboost import DMatrix, XGBClassifier
 
@@ -233,3 +234,29 @@ class Classifier:
         self.model_evaluation['precision'] = np.diagonal(cm) / np.sum(cm, axis=0)
 
         self.model_evaluation['recall'] = np.diagonal(cm) / np.sum(cm, axis=1)
+
+
+class Regression:
+    def __init__(self, input_dict):
+        print(input_dict)
+        data = np.array([[row['x'], row['y']] for row in input_dict['data']])
+        self.X = data[:,0][:,np.newaxis]
+        self.y = data[:,1][:,np.newaxis]
+        self.model_specs = input_dict['model']
+        self.inputspace = input_dict['inputspace']
+        self.ml_specs = input_dict['ml_specs']
+
+
+    def fit(self):
+        if self.model_specs['val'] == 'linear_regression':
+            self.model = LinearRegression()
+            polynom = PolynomialFeatures(degree=int(self.ml_specs['polynomial_order']))
+            X_transformed = polynom.fit_transform(self.X)
+            self.model.fit(X= X_transformed
+                        ,y= self.y)
+            
+    def predict(self):
+        x_range = np.arange(0, self.inputspace[0])[:,np.newaxis]
+        x_range_transformed = PolynomialFeatures(degree=int(self.ml_specs['polynomial_order'])).fit_transform(x_range)
+        predictions = self.model.predict(x_range_transformed)[:np.newaxis]
+        return np.concatenate((x_range, predictions), axis=1).tolist()
