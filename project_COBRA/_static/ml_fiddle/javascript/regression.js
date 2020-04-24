@@ -1,5 +1,71 @@
 var post_url = "http://127.0.0.1:8000"
 
+let LayerComponent = {
+    delimiters: ['[[', ']]'],
+    template: "#layer-template",
+    // props: {
+    //     numberUnits: Number,
+    //     activation: String,
+    // },
+    props: {
+        id: Number
+    },
+    
+    mounted() {
+        this.idx = this.id
+    },
+
+    data() {
+        return {
+            idx: null,
+            numberUnits : 16,
+            activation : 'relu',
+            activations: ['relu', 'sigmoid', 'tanh']
+        }    
+    },
+    
+    watch: {
+        $data: {
+            handler: function() {
+                this.$emit('set-layer-options', {'idx': this.idx, 'numberUnits':this.numberUnits, 'activation': this.activation})
+            },
+            deep:true
+        }
+    }
+}
+
+Vue.component('neural-net-options', {
+    delimiters: ['[[', ']]'],
+    template: "#neural-net-template",
+    components: {
+        'layer-component': LayerComponent
+    },
+    mounted() {
+        this.$emit('set-ml-options', this.$data)
+    },
+
+    data() {
+        return {
+            layers: []
+        }
+    },
+
+    methods: {
+
+        get_layer_options(e) {
+            this.layers[e.idx] = e
+        }
+    },
+    watch: {
+        $data: {
+            handler: function() {
+                this.$emit('set-ml-options', this.$data)
+            },
+            deep: true
+        }
+    }
+})
+
 Vue.component('linear-regression-options', {
     delimiters: ['[[', ']]'],
     template: "#linear-regression-template",
@@ -13,7 +79,7 @@ Vue.component('linear-regression-options', {
         }
     },
     watch: {
-        polynomial_order: {
+        $data: {
             handler: function() {
                 this.$emit('set-ml-options', this.$data)
             },
@@ -21,6 +87,7 @@ Vue.component('linear-regression-options', {
         }
     }
 })
+
 
 var regressionApp = new Vue({
     delimiters: ['[[', ']]'],
@@ -121,6 +188,7 @@ var regressionApp = new Vue({
             currModel: {},
             models: [
                 {name: 'linear regression', val: 'linear_regression'},
+                {name: 'neural net', val: 'nn'},
             ],
             mlSpecs: [],
             points: [],

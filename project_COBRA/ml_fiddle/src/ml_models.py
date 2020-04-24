@@ -238,7 +238,6 @@ class Classifier:
 
 class Regression:
     def __init__(self, input_dict):
-        print(input_dict)
         data = np.array([[row['x'], row['y']] for row in input_dict['data']])
         self.X = data[:,0][:,np.newaxis]
         self.y = data[:,1][:,np.newaxis]
@@ -254,9 +253,43 @@ class Regression:
             X_transformed = polynom.fit_transform(self.X)
             self.model.fit(X= X_transformed
                         ,y= self.y)
+
+        elif self.model_specs['val'] == 'nn':
+            
+            self.X = np.true_divide(self.X, self.inputspace[0])
+
+
+            print(self.ml_specs)
+            layers = self.ml_specs['layers']
+
+            self.model = Sequential()
+
+            self.model.add(Input(shape= (1,)))
+
+            for layer in layers:
+                self.model.add(Dense(int(layer['numberUnits']), activation= layer['activation']))
+
+            self.model.add(Dense(1, 'linear'))
+
+            self.model.summary()
+
+            self.model.compile(
+                optimizer= 'adam'
+                ,loss= 'mean_squared_error'
+                ,metrics= ['mean_squared_error']
+            )
+
+            self.model.fit(x= self.X, y= self.y, batch_size= 32, epochs= 200)
+
             
     def predict(self):
-        x_range = np.arange(0, self.inputspace[0])[:,np.newaxis]
-        x_range_transformed = PolynomialFeatures(degree=int(self.ml_specs['polynomial_order'])).fit_transform(x_range)
-        predictions = self.model.predict(x_range_transformed)[:np.newaxis]
-        return np.concatenate((x_range, predictions), axis=1).tolist()
+        if self.model_specs['val'] == 'linear_regression':
+            x_range = np.arange(0, self.inputspace[0])[:,np.newaxis]
+            x_range_transformed = PolynomialFeatures(degree=int(self.ml_specs['polynomial_order'])).fit_transform(x_range)
+            predictions = self.model.predict(x_range_transformed)[:np.newaxis]
+            return np.concatenate((x_range, predictions), axis=1).tolist()
+        elif self.model_specs['val'] == 'nn':
+            x_range = np.arange(0, self.inputspace[0])[:,np.newaxis]
+            x_range_transformed = np.true_divide(x_range, self.inputspace[0])
+            predictions = self.model.predict(x_range_transformed)[:np.newaxis]
+            return np.concatenate((x_range, predictions), axis=1).tolist()

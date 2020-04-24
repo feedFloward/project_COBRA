@@ -78,6 +78,7 @@
 
         <div class="col-6">
             <linear-regression-options v-if="currModel.val === 'linear_regression'" @set-ml-options="get_ml_specs($event)"></linear-regression-options>
+            <neural-net-options v-else-if="currModel.val === 'nn'" @set-ml-options="get_ml_specs($event)"></neural-net-options>
         </div>
 
         <div class="col">
@@ -96,6 +97,37 @@
                 <label for="polynomial-order-slider">polynomial order [[ polynomial_order ]]</label>
                 <input :value="polynomial_order" type="range" class="custom-range" min="0" max="14" id="polynomial-order-slider" @input="polynomial_order= $event.target.value">
             </form>
+        </div>
+    </script>
+
+    <script type="text/x-template" id="neural-net-template">
+        <div>
+            <div class="row">
+                <button class="btn btn-info" @click="layers.push(layers.length)">add layer</button>
+            </div>
+            <layer-component v-for="(layer, idx) in layers" :id="idx" @set-layer-options="get_layer_options($event)"></layer-component>
+        </div>
+    </script>
+
+    <script type="text/x-template" id="layer-template">
+        <div class="row">
+            <form class="range-field my-4 w-25">
+                <label>number of units [[ numberUnits ]]</label>
+                <input type="range" class="custom-range" min="1" max="1024" :value="numberUnits" @input="numberUnits = $event.target.value">
+            </form>
+
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    [[activation]]
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <button v-for="activation_ in activations" v-bind:value="activation_" class="btn-dropdown dropdown-item" @click="activation= activation_">[[ activation_ ]]</button>
+                </div>
+
+              </div>
+
+            <button class="btn btn-danger" >remove</button>
+
         </div>
     </script>
 
