@@ -58,7 +58,8 @@
 .class-mouseover:hover{
     background: lightslategray;
 }
-.class-selected{
+.class-selected,
+div[class-selected] {
     background: lightsteelblue;
 }
 
@@ -67,4 +68,18 @@
 }
 .city-selected{
     background: lightsteelblue;
+}
+
+/*
+Buttons only shown when hovering over parent div
+*/
+
+.div-hover .btn-hover{
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.5s linear;
+}
+.div-hover:hover > .btn-hover{
+    visibility: visible;
+    opacity: 1;
 }

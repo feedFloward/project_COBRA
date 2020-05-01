@@ -17,7 +17,8 @@ from sklearn.preprocessing import PolynomialFeatures
 
 from xgboost import DMatrix, XGBClassifier
 
-class Classifier:
+
+class Classifier2:
     def __init__(self):
         print('------------------------------------------------')
     
@@ -234,6 +235,102 @@ class Classifier:
         self.model_evaluation['precision'] = np.diagonal(cm) / np.sum(cm, axis=0)
 
         self.model_evaluation['recall'] = np.diagonal(cm) / np.sum(cm, axis=1)
+
+class Classifier:
+    def __init__(self, input_dict):
+
+        #extract datapoints
+        data = []
+        self.num_classes = len(input_dict['data'])
+        print(self.num_classes)
+        for i, c in enumerate(input_dict['data']):
+            for point in c:
+                data.append([point['x'], point['y'], i])
+        data = np.array(data)
+        
+        self.X = data[:,:2]
+        self.y = data[:,-1:]
+
+        self.model_specs = input_dict['model']
+        self.inputspace = input_dict['inputspace']
+        self.ml_specs = input_dict['ml_specs']
+
+    def fit(self):
+        if self.model_specs['val'] == 'svm':
+            kernel = self.ml_specs['kernel']
+            self.model = SVC(kernel= kernel)
+            self.model.fit(self.X, self.y)
+
+        elif self.model_specs['val'] == 'logistic':
+            self.model = LogisticRegression()
+            self.model.fit(self.X, self.y)
+
+        elif self.model_specs['val'] == 'tree':
+            self.model = DecisionTreeClassifier()
+            self.model.fit(self.X, self.y)
+
+        elif self.model_specs['val'] == 'forest':
+            self.model = RandomForestClassifier()
+            self.model.fit(self.X, self.y)
+
+        elif self.model_specs['val'] == 'k-nn':
+            self.model = KNeighborsClassifier()
+            self.model.fit(self.X, self.y)
+
+        elif self.model_specs['val'] == 'naive_bayes':
+            self.model = GaussianNB()
+            self.model.fit(self.X, self.y)
+
+        elif self.model_specs['val'] == 'boosting':
+            self.model = XGBClassifier()
+            self.model.fit(self.X, self.y)
+
+        elif self.model_specs['val'] == 'nn':
+
+            y_one_hot = to_categorical(self.y)
+            
+            layers = self.ml_specs['layers']
+            self.model = Sequential()
+            self.model.add(Input(shape=(2,)))
+            for layer in layers:
+                self.model.add(Dense(layer['numberUnits'], activation= layer['activation']))
+                if self.ml_specs['batchNorm']:
+                    self.model.add(BatchNormalization())
+            self.model.add(Dense(units= self.num_classes, activation='softmax'))
+
+            self.model.summary()
+            self.model.compile(optimizer= 'adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
+
+            self.model.fit(self.X, y_one_hot, epochs=50)
+
+
+    def predict(self):
+        if self.model_specs['val'] != 'nn':
+            mesh_x, mesh_y = np.meshgrid(np.linspace(0, self.inputspace[0], num=self.inputspace[0]),
+                            np.linspace(0, self.inputspace[1], num=self.inputspace[1]))
+
+            Z = self.model.predict(np.c_[mesh_x.ravel(), mesh_y.ravel()])
+            Z = Z.reshape(mesh_x.shape)
+
+        else:
+            mesh_x, mesh_y = np.meshgrid(np.linspace(0, self.inputspace[0], num=self.inputspace[0]),
+                                        np.linspace(0, self.inputspace[1], num=self.inputspace[1]))
+
+            Z = self.model.predict(np.c_[mesh_x.ravel(), mesh_y.ravel()])
+            Z = np.argmax(Z, axis=1)[:, np.newaxis]
+            Z = Z.reshape(mesh_x.shape)
+
+
+        answer_dict = {'Z': Z.tolist()}
+        # for key, val in self.model_evaluation.items():
+        #     answer_dict.update({key: val.tolist()})
+
+        # if self.model_type == 'nn':
+        #     learning_curve = self.learning_curve.history['categorical_accuracy']
+        #     learning_curve = [str(epoch) for epoch in learning_curve]
+        #     answer_dict.update({'learning_curve':  learning_curve})
+
+        return answer_dict
 
 
 class Regression:

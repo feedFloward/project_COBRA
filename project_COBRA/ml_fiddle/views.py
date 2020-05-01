@@ -9,7 +9,7 @@ def ml_fiddle_home(request):
     return render(request, '_static/home.html')
 
 def classification_page(request):
-    return render(request, 'ml_fiddle/ml_fiddle_classification.html')
+    return render(request, 'ml_fiddle/classification.html')
 
 def clustering_page(request):
     return render(request, 'ml_fiddle/ml_fiddle_clustering.html')
@@ -24,8 +24,8 @@ def make_classification(request):
     if request.method == "POST":
         get_values = request.body
         values_dict = json.loads(get_values)
-        clf = Classifier()
-        clf.fit(data=values_dict)
+        clf = Classifier(input_dict= values_dict)
+        clf.fit()
         predictions = clf.predict()
         
         return HttpResponse(json.dumps(predictions), content_type="application/json")

@@ -1,0 +1,190 @@
+{% extends "_static/base.html" %}
+
+{% load static %}
+
+{% block custom_tags %}
+    <!--  Custom CSS  -->
+    <link rel="stylesheet" type="text/css" href="{% static 'ml_fiddle/css/ml_fiddle.css' %}">
+
+    <!-- tensorflow.js import -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <!-- and tfjs-vis-->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+
+    <!-- Axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+
+    <!-- Cookie -->
+    <script src="{% static 'jquery.cookie.js' %}"></script>
+{% endblock custom_tags %}
+
+
+{% block content %}
+
+<body>
+
+
+
+<div id="classification-app" class="container-fluid h-100" style="margin-top: 0%;">
+    <div v-if="isLoading" class="loader" id="loader"></div>
+    <div v-if="isLoading" id="overlay" style="background-color:grey;position:absolute;top:0;left:0;height:100%;width:100%;z-index:98;opacity:0.5"></div>
+
+
+
+    <div class="row flex-fill">
+        <div class="col" id="dataset-definition">
+            <h5>your dataset</h5>
+
+            <div class="row d-flex justify-content-around p-2">
+                <div class="col">
+                    <button type="button" class="btn btn-danger btn-block" @click="clear_data">clear dataset</button>
+                </div>
+
+                <div class="col">
+                    <div class="dropdown">
+                        <button class="btn btn-primary btn-block dropdown-toggle" type="button" id="variance-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          brush size
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <button v-for="variance in variances" v-bind:value="variance.val" class="btn-dropdown dropdown-item" @click="currVariance = variance.val">[[ variance.name ]]</button>
+                        </div>
+        
+                    </div>
+                </div>
+
+
+                <div class="col">
+                    <p>total sample size: [[ getTotalSampleSize ]]</p>
+                    <p>dataset balance: [[ calc_balance_measure ]]</p>
+                </div>
+            </div>
+
+            <class-definition v-for="(cls, idx) in dataset" v-bind:index="idx" v-bind:num-samples="cls.length" v-bind:class-selected="idx === currClass"></class-definition>
+
+            <div class="row">
+                <button type="button" class="btn btn-info btn-block" @click="add_class">add class</button>
+            </div>
+
+        </div>
+
+        <div class="col-6 border rounded" id="inputspace_div">
+            <canvas ref="inputspace_canvas" class="canvas" id="inputspace_canvas"></canvas>
+        </div>
+
+        <div class="col">
+            <h5>analysis</h5>
+        </div>
+    </div>
+
+    <div class="row flex-fill">
+        <div class="col">
+            <div class="dropdown">
+                <button v-if="Object.keys(currModel).length > 0" class="btn btn-primary dropdown-toggle" type="button" id="model-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    [[currModel.name]]
+                </button>
+                <button v-else class="btn btn-primary dropdown-toggle" type="button" id="model-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    choose model
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <button v-for="model in models" v-bind:value="model.val" class="btn-dropdown dropdown-item" @click="currModel= model">[[ model.name ]]</button>
+                </div>
+
+              </div>
+        </div>
+
+        <div class="col-6">
+            <svm-options v-if="currModel.val === 'svm'" @set-ml-options="get_ml_specs($event)"></svm-options>
+            <neural-net-options v-else-if="currModel.val === 'nn'" @set-ml-options="get_ml_specs($event)"></neural-net-options>
+        </div>
+
+        <div class="col">
+            <button class="btn btn-success" @click="write_data">train</button>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Vue.js -->
+<script src="https://unpkg.com/vue"></script>
+<script src="{% static 'ml_fiddle/javascript/classification.js' %}"></script>
+
+<script type="text/x-template" id="class-definition-template">
+    <div class="row div-hover d-flex justify-content-around border rounded" @click="select_class(index)">
+        <p>class [[index]]</p>
+        <p>num samples: [[numSamples]]</p>
+        <button class="btn btn-danger btn-hover" @click="remove_class(index)">
+            remove
+        </button>
+    </div>
+</script>
+
+<script type="text/x-template" id="svm-options-template">
+    <div class="row">
+        <div class="dropdown">
+            <button v-if="currKernel.length > 0" class="btn btn-primary dropdown-toggle" type="button" id="kernel-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                [[currKernel]]
+            </button>
+            <button v-else class="btn btn-primary dropdown-toggle" type="button" id="kernel-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                choose kernel
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <button v-for="kernel in kernels" v-bind:value="kernel" class="btn-dropdown dropdown-item" @click="currKernel = kernel">[[ kernel ]]</button>
+            </div>
+
+          </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="neural-net-template">
+    <div class="row">
+        <div class="col-8">
+            <div class="row">
+                <button class="btn btn-info" @click="layers.push(layers.length)">add layer</button>
+            </div>
+            <layer-component v-for="(layer, idx) in layers" :id="idx" @set-layer-options="get_layer_options($event)"></layer-component>
+        </div>
+
+        <div class="col">
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="batch-norm-chkbx" v-model="batchNorm">
+                <label for="batch-norm-chkbx" class="custom-control-label">batch norm</label>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="layer-template">
+    <div class="row">
+        <div class="col-8">
+            <form class="range-field w-50">
+                <label>number of units [[ numberUnits ]]</label>
+                <input type="range" class="custom-range" min="1" max="1024" :value="numberUnits" @input="numberUnits = $event.target.value">
+            </form>
+        </div>
+
+        <div class="col">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    [[activation]]
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <button v-for="activation_ in activations" v-bind:value="activation_" class="btn-dropdown dropdown-item" @click="activation= activation_">[[ activation_ ]]</button>
+                </div>    
+            </div>
+        </div>
+
+        <div class="col">
+            <button class="btn btn-danger" @click="remove_layer(id)">remove</button>
+        </div>
+
+    </div>
+</script>
+
+
+
+
+
+</body>
+
+{% endblock content%}
