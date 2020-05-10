@@ -251,6 +251,8 @@ class Classifier:
         self.X = data[:,:2]
         self.y = data[:,-1:]
 
+        self.X, self.X_vali, self.y, self.y_vali = train_test_split(self.X, self.y)
+
         self.model_specs = input_dict['model']
         self.inputspace = input_dict['inputspace']
         self.ml_specs = input_dict['ml_specs']
@@ -312,6 +314,9 @@ class Classifier:
             Z = self.model.predict(np.c_[mesh_x.ravel(), mesh_y.ravel()])
             Z = Z.reshape(mesh_x.shape)
 
+            y_pred = self.model.predict(self.X_vali)
+            cm = confusion_matrix(self.y_vali, y_pred)
+
         else:
             mesh_x, mesh_y = np.meshgrid(np.linspace(0, self.inputspace[0], num=self.inputspace[0]),
                                         np.linspace(0, self.inputspace[1], num=self.inputspace[1]))
@@ -320,8 +325,19 @@ class Classifier:
             Z = np.argmax(Z, axis=1)[:, np.newaxis]
             Z = Z.reshape(mesh_x.shape)
 
+            y_pred = np.argmax(self.model.predict(self.X_vali), axis=1)
+            cm = confusion_matrix(self.y_vali, y_pred)
 
-        answer_dict = {'Z': Z.tolist()}
+        accuracy = np.around(np.sum(np.diagonal(cm)) / np.sum(cm), decimals=3)
+        precision = np.around(np.diagonal(cm) / np.sum(cm, axis=0), decimals=3)
+        recall = np.around(np.diagonal(cm) / np.sum(cm, axis=1), decimals=3)
+
+        answer_dict = {'Z': Z.tolist(),
+                    'overall_accuracy': accuracy.tolist(),
+                    'precision': precision.tolist(),
+                    'recall': recall.tolist()}
+
+        
         # for key, val in self.model_evaluation.items():
         #     answer_dict.update({key: val.tolist()})
 

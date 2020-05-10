@@ -1,0 +1,57 @@
+{% extends "_static/base.html" %}
+
+{% load static %}
+
+{% block custom_tags %}
+    <!--  Custom CSS  -->
+    <link rel="stylesheet" type="text/css" href="{% static 'ml_fiddle/css/ml_fiddle.css' %}">
+
+    <!-- tensorflow.js import -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <!-- and tfjs-vis-->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+
+    <!-- Axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+
+    <!-- Cookie -->
+    <script src="{% static 'jquery.cookie.js' %}"></script>
+
+{% endblock custom_tags %}
+
+
+{% block content %}
+
+<div id="js-vars" data-js-vars='{{json_data}}'></div>
+
+<div id="food-app" class="container-fluid h-100" style="margin-top: 0%;">
+
+    <div class="row">
+
+        <div class="col">
+            <a class="btn btn-primary" role="button" href="{% url 'add_post' %}">image upload</a>
+        </div>
+
+        <div class="col">
+            <img src="{{image.img.url}}" height="700" width="700">
+        </div>
+
+        <div class="col">
+            <button class="btn btn-success" @click="make_prediction">what am i eating?</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <h2 v-if="foodName">you are eating [[foodName]]. [[description]].</h2>
+    </div>
+
+
+</div>
+
+<!-- Vue.js -->
+<script src="https://unpkg.com/vue"></script>
+<script src="{% static 'food101/javascript/food.js' %}"></script>
+
+
+
+{% endblock content%}

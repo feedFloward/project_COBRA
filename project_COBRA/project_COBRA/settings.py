@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # --- custom ---
     'ml_fiddle',
     'operations_research_gasm',
+    'food101',
 
     # --- default ---
     'django.contrib.admin',
@@ -129,3 +130,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, '_static/'),  # add STATIC_ROOT to DIRS
 ]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

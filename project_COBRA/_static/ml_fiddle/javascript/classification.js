@@ -278,8 +278,14 @@ var classificationApp = new Vue({
                 }
             ))
             this.predictions = response.data
+            this.metrics = {
+                'overall_accuracy': response.data['overall_accuracy'],
+                'precision': response.data['precision'],
+                'recall': response.data['recall'],
+            }
             this.redraw_data()
             this.plot_predictions()
+
         }
 
     },
@@ -315,6 +321,7 @@ var classificationApp = new Vue({
             currClass: null,
             dataset: [],
             predictions: {},
+            metrics: {},
         }
     },
 

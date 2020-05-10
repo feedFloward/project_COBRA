@@ -73,6 +73,9 @@
 
         <div class="col">
             <h5>analysis</h5>
+            <p>overall accuracy: [[ metrics.overall_accuracy ]]</p>
+            <p v-for="(prec, idx) in metrics.precision">class [[idx]] precision: [[ prec ]]</p>
+            <p v-for="(rec, idx) in metrics.recall">class [[idx]] recall: [[rec]]</p>
         </div>
     </div>
 

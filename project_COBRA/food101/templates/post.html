@@ -1,0 +1,33 @@
+{% extends "_static/base.html" %}
+
+{% load static %}
+
+{% block custom_tags %}
+    <!--  Custom CSS  -->
+    <link rel="stylesheet" type="text/css" href="{% static 'ml_fiddle/css/ml_fiddle.css' %}">
+
+    <!-- tensorflow.js import -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <!-- and tfjs-vis-->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+
+    <!-- Cookie -->
+    <script src="{% static 'jquery.cookie.js' %}"></script>
+
+{% endblock custom_tags %}
+
+
+{% block content %}
+
+<div id="js-vars" data-js-vars='{{json_data}}'></div>
+
+
+<h1>Upload image</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{form.as_p }}
+    <button type="submit">Submit</button>
+</form>
+
+
+{% endblock content%}
