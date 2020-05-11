@@ -1,15 +1,15 @@
 import numpy as np
 import tensorflow as tf
 import cv2
-from keras import backend as K
+from tensorflow.keras import backend as K
 
+import os
 
+print(tf.__version__)
 
 
 def predict(img):
     img = img[1:]
-    print(img)
-
 
     with open('_static/food101/labels.txt', 'r') as f:
         label_names = f.read()
@@ -24,7 +24,8 @@ def predict(img):
                                         custom_objects= {
                                             'FixedDropout': FixedDropout,
                                             'swish': tf.compat.v2.nn.swish,
-                                        })
+                                        }
+                                        )
 
     softmax_output = model.predict(_preprocess_img(img))
     max_prob = np.argmax(softmax_output)

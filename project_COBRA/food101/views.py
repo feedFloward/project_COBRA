@@ -35,6 +35,9 @@ class CreatePostView(CreateView):
     def form_valid(self, form):
         Image_Post.objects.all().delete()
         for f in os.listdir('media/images/'):
-            os.remove('media/images/'+f)
+            if f == '.gitkeep':
+                pass
+            else:
+                os.remove('media/images/'+f)
         self.object = form.save()
         return HttpResponseRedirect('/food101')
