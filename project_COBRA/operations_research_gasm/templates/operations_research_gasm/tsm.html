@@ -1,0 +1,197 @@
+{% extends "_static/base.html" %}
+
+{% load static %}
+
+{% block custom_tags %}
+    <!--  Custom CSS  -->
+    <link rel="stylesheet" type="text/css" href="{% static 'ml_fiddle/css/ml_fiddle.css' %}">
+
+    <!-- tensorflow.js import -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <!-- and tfjs-vis-->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+
+    <!-- Axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+
+    <!-- Cookie -->
+    <script src="{% static 'jquery.cookie.js' %}"></script>
+
+{% endblock custom_tags %}
+
+
+{% block content %}
+
+<div id="js-vars" data-js-vars='{{json_data}}'></div>
+
+
+
+
+<div id="tsm-app" class="container-fluid h-100" style="margin-top: 0%;">
+
+    <div class="row bg-light flex-fill d-flex">
+
+        <div class="col" id="city_definition">
+            <button class="btn btn-subheader collapsed change-icon" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                <span>+</span> place cities
+            </button>
+            <div id="collapseTwo">
+                <city-definition v-for="(city, idx) in cities" v-bind:index=idx></city-definition>
+            </div>
+        </div>
+
+        <div id="inputspace_div" class="col-6 border rounded">
+            
+            <canvas ref="inputspace_canvas" id="inputspace_canvas" class="canvas"></canvas>
+
+        </div>
+
+        <div class="col ml-1" id="commando_panel">
+
+            <div class="row">
+                <button class="btn btn-danger" id="clear_all_btn" @click="resetData">clear canvas</button>
+
+                <div class="dropdown ml-1">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="optimizer_history" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        history
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="optimizer_history" id="optimizer_history_dropdown">
+
+                    </div>
+                </div>
+
+                <button class="btn btn-success ml-1" id="play_btn">play!</button>
+
+            </div>
+
+            <div class="row mt-5">
+                <span># possible solutions: </span>
+                <output id="num_permutations">not defined</output>
+            </div>
+
+            <div class="row mt-5">
+                <span>solution's total lenght: </span>
+                <output id="total_length" class="metric">not defined</output>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- unterer teil -->
+    <div class="row bg-light flex-grow-1 border-bottom" style="margin-top: 1%;">
+        
+        <div class="col-1 border-right" id="opti">
+
+            <div class="dropright">
+                <button v-if="Object.keys(currOptimization).length > 0" class="btn btn-primary dropdown-toggle" type="button" id="optimization-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    [[currOptimization.name]]
+                </button>
+                <button v-else class="btn btn-primary dropdown-toggle" type="button" id="optimization-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    choose optimization
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <button v-for="optimization in optimizations" v-bind:value="optimization.val" class="btn-dropdown dropdown-item" @click="currOptimization= optimization">[[ optimization.name ]]</button>
+                </div>
+
+            </div>
+
+
+        </div>
+
+        <div class="col-7 border-right" id="opti_spec">
+            <random-options v-if="currOptimization.val == 'random'" @set-optimizer-options="getOptimizerSpecs($event)"></random-options>
+            <simulated-annealing-options v-else-if="currOptimization.val == 'simulated_annealing'" @set-optimizer-options="getOptimizerSpecs($event)"></simulated-annealing-options>
+            <cem-options v-else-if="currOptimization.val == 'cem'" @set-optimizer-options="getOptimizerSpecs($event)"></cem-options>
+        </div>
+
+        <div class="col-2" id="opti_spec_opti">
+
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" checked id="circle_mode">
+                <label class="custom-control-label" for="circle_mode">circle mode</label>
+            </div>
+
+        </div>
+
+        <div class="col-1">
+            
+            <div class="row">
+                <button type="button" class="btn btn-success btn-block" id="optimize_btn" @click="writeData">optimize</button>
+            </div>
+        
+        </div>
+    </div>
+
+</div>
+
+<!-- Vue -->
+<script src="https://unpkg.com/vue"></script>
+<script src="{% static 'operations_research_gasm/javascript/or_gasm.js' %}"></script>
+
+
+<script type="text/x-template" id="city-definition-template">
+    <div class="row div-hover d-flex justify-content-around border rounded">
+        <p>city [[index]]</p>
+        <p v-if="isStartCity == true">route starts here</p>
+        <button class="btn btn-danger btn-hover" @click="removeCity(index)">
+            remove
+        </button>
+    </div>
+</script>
+
+<script type="text/x-template" id="random-template">
+    <div class="row">
+        <div class="col-8">
+            <form class="range-field w-50">
+                <label>[[numSteps]] steps</label>
+                <input type="range" class="custom-range" min="10" max="10000" :value="numSteps" @input="numSteps= $event.target.value">
+            </form>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="simulated-annealing-template">
+    <div>
+        <div class="row">
+            <div class="col-8">
+                <form class="range-field w-50">
+                    <label>[[numSteps]] steps</label>
+                    <input type="range" class="custom-range" min="10" max="50000" step="10" :value="numSteps" @input="numSteps= $event.target.value">
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-8">
+                <form class="range-field w-50">
+                    <label>[[initialTemperature]] initial Temperature</label>
+                    <input type="range" class="custom-range" min="1" max="300" step="1" :value="initialTemperature" @input="initialTemperature= $event.target.value">
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="cem-template">
+    <div>
+        <div class="row">
+            <div class="col-8">
+                <form class="range-field w-50">
+                    <label>[[numSteps]] steps</label>
+                    <input type="range" class="custom-range" min="10" max="50000" step="10" :value="numSteps" @input="numSteps= $event.target.value">
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-8">
+                <form class="range-field w-50">
+                    <label>[[Nval]] N</label>
+                    <input type="range" class="custom-range" min="1" max="300" step="1" :value="Nval" @input="Nval= $event.target.value">
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+{% endblock content%}
